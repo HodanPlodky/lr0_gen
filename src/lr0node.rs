@@ -70,7 +70,9 @@ impl<'a> LR0Node<'a> {
     }
 
     pub(crate) fn all_rules(&self) -> HashSet<&LR0Rule> {
-        self.base.union(&self.closure).collect::<HashSet<&LR0Rule>>()
+        self.base
+            .union(&self.closure)
+            .collect::<HashSet<&LR0Rule>>()
     }
 }
 

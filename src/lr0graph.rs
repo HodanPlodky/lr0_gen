@@ -5,7 +5,7 @@ use crate::lr0node::LR0Node;
 #[derive(Debug)]
 pub(crate) struct LR0Graph<'a> {
     pub(crate) nodes: Vec<LR0Node<'a>>,
-    edges: Vec<HashMap<char, usize>>,
+    pub(crate) edges: Vec<HashMap<char, usize>>,
 }
 
 impl<'a> LR0Graph<'a> {

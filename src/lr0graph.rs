@@ -4,7 +4,7 @@ use crate::lr0node::LR0Node;
 
 #[derive(Debug)]
 pub(crate) struct LR0Graph<'a> {
-    nodes: Vec<LR0Node<'a>>,
+    pub(crate) nodes: Vec<LR0Node<'a>>,
     edges: Vec<HashMap<char, usize>>,
 }
 
@@ -33,10 +33,10 @@ impl<'a> LR0Graph<'a> {
         self.edges.push(HashMap::new());
 
         let index = self.nodes.len() - 1;
-    
+
         let steps = self.nodes[index].get_steps();
         let g = self.nodes[index].gramm;
-        
+
         let mut nidx = index + 1;
         for (c, rules) in steps {
             let nnode = LR0Node::new(HashSet::from_iter(rules.into_iter()), g);
@@ -51,7 +51,7 @@ impl<'a> LR0Graph<'a> {
         }
     }
 
-    pub(crate) fn construct(&mut self, start_node : LR0Node<'a>) {
+    pub(crate) fn construct(&mut self, start_node: LR0Node<'a>) {
         self.add_node(start_node);
     }
 }

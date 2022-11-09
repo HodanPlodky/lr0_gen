@@ -26,7 +26,7 @@ impl<'a> LR0Node<'a> {
         }
     }
 
-    pub(crate) fn default(g : &'a Grammar) -> Self {
+    pub(crate) fn default(g: &'a Grammar) -> Self {
         Self::new(HashSet::from([LR0Rule::new(0, 0)]), g)
     }
 
@@ -60,11 +60,17 @@ impl<'a> LR0Node<'a> {
                 let tmp = rule.next_rule();
                 match res.get_mut(&c) {
                     Some(v) => v.push(tmp),
-                    None => {res.insert(c, vec![tmp]);},
+                    None => {
+                        res.insert(c, vec![tmp]);
+                    }
                 }
             }
         }
         res
+    }
+
+    pub(crate) fn all_rules(&self) -> HashSet<&LR0Rule> {
+        self.base.union(&self.closure).collect::<HashSet<&LR0Rule>>()
     }
 }
 

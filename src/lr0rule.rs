@@ -2,8 +2,8 @@ use crate::Grammar;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct LR0Rule {
-    rule: usize,
-    place: usize,
+    pub(crate) rule: usize,
+    pub(crate) place: usize,
 }
 
 impl LR0Rule {

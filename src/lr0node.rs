@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::{lr0rule::LR0Rule, Grammar};
 
@@ -6,7 +6,7 @@ use crate::{lr0rule::LR0Rule, Grammar};
 pub struct LR0Node<'a> {
     base: HashSet<LR0Rule>,
     closure: HashSet<LR0Rule>,
-    gramm: &'a Grammar,
+    pub(crate) gramm: &'a Grammar,
 }
 
 impl PartialEq for LR0Node<'_> {
@@ -24,6 +24,10 @@ impl<'a> LR0Node<'a> {
             closure: HashSet::new(),
             gramm,
         }
+    }
+
+    pub(crate) fn default(g : &'a Grammar) -> Self {
+        Self::new(HashSet::from([LR0Rule::new(0, 0)]), g)
     }
 
     pub(crate) fn create_closure(&mut self) {
@@ -49,16 +53,15 @@ impl<'a> LR0Node<'a> {
         }
     }
 
-    pub(crate) fn get_steps(&self) -> HashSet<char> {
-        let mut res: HashSet<char> = HashSet::new();
-        for rule in self.base.iter() {
+    pub(crate) fn get_steps(&self) -> HashMap<char, Vec<LR0Rule>> {
+        let mut res: HashMap<char, Vec<LR0Rule>> = HashMap::new();
+        for rule in self.base.union(&self.closure) {
             if let Some(c) = rule.get_sym(&self.gramm) {
-                res.insert(c);
-            }
-        }
-        for rule in self.closure.iter() {
-            if let Some(c) = rule.get_sym(&self.gramm) {
-                res.insert(c);
+                let tmp = rule.next_rule();
+                match res.get_mut(&c) {
+                    Some(v) => v.push(tmp),
+                    None => {res.insert(c, vec![tmp]);},
+                }
             }
         }
         res
@@ -78,6 +81,7 @@ mod tests {
             assert!(lr0node.closure.contains(&r));
         }
     }
+
     #[test]
     fn test_create_closure() {
         let mut g1 = Grammar::new(HashSet::from(['S', 'A']), HashSet::from(['a']));
@@ -139,7 +143,15 @@ mod tests {
         let mut lr0node = LR0Node::new(HashSet::from_iter(base.into_iter()), gramm);
         lr0node.create_closure();
         let gen_syms = lr0node.get_steps();
-        assert_eq!(HashSet::from_iter(syms.into_iter()), gen_syms);
+
+        let hset: HashSet<char> = HashSet::from_iter(syms.into_iter());
+
+        assert_eq!(gen_syms.len(), hset.len());
+        //assert_eq!(HashSet::from_iter(syms.into_iter()), gen_syms);
+
+        for c in hset {
+            assert!(gen_syms.contains_key(&c));
+        }
     }
 
     #[test]

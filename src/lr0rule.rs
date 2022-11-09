@@ -22,6 +22,10 @@ impl LR0Rule {
             Some(gramm.rules[self.rule].right[self.place])
         }
     }
+
+    pub(crate) fn next_rule(&self) -> Self {
+        LR0Rule::new(self.rule, self.place + 1)
+    }
 }
 
 #[cfg(test)]

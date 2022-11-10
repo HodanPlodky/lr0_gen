@@ -2,8 +2,8 @@ use std::{collections::HashSet, fmt::Display};
 
 #[derive(Debug)]
 pub struct Grammar {
-    non_terms: HashSet<char>,
-    terms: HashSet<char>,
+    pub(crate) non_terms: HashSet<char>,
+    pub(crate) terms: HashSet<char>,
 
     pub(crate) rules: Vec<Rule>,
 }

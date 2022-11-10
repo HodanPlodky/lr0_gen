@@ -4,6 +4,7 @@ use crate::{lr0rule::LR0Rule, Grammar};
 
 #[derive(Debug)]
 pub struct LR0Node<'a> {
+    pub(crate) from : char,
     base: HashSet<LR0Rule>,
     closure: HashSet<LR0Rule>,
     pub(crate) gramm: &'a Grammar,
@@ -18,8 +19,9 @@ impl PartialEq for LR0Node<'_> {
 impl Eq for LR0Node<'_> {}
 
 impl<'a> LR0Node<'a> {
-    pub(crate) fn new(base: HashSet<LR0Rule>, gramm: &'a Grammar) -> Self {
+    pub(crate) fn new(base: HashSet<LR0Rule>, from :char, gramm: &'a Grammar) -> Self {
         Self {
+            from,
             base,
             closure: HashSet::new(),
             gramm,
@@ -27,7 +29,7 @@ impl<'a> LR0Node<'a> {
     }
 
     pub(crate) fn default(g: &'a Grammar) -> Self {
-        Self::new(HashSet::from([LR0Rule::new(0, 0)]), g)
+        Self::new(HashSet::from([LR0Rule::new(0, 0)]), g.rules[0].left, g)
     }
 
     pub(crate) fn create_closure(&mut self) {
@@ -81,7 +83,7 @@ mod tests {
     use super::*;
 
     fn test_closure(rules: Vec<LR0Rule>, closure: Vec<LR0Rule>, gramm: &Grammar) {
-        let mut lr0node = LR0Node::new(HashSet::from_iter(rules.into_iter()), &gramm);
+        let mut lr0node = LR0Node::new(HashSet::from_iter(rules.into_iter()), 'X', &gramm);
 
         lr0node.create_closure();
         println!("{:?}", lr0node.closure);

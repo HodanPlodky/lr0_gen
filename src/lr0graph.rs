@@ -39,7 +39,7 @@ impl<'a> LR0Graph<'a> {
 
         let mut nidx = index + 1;
         for (c, rules) in steps {
-            let nnode = LR0Node::new(HashSet::from_iter(rules.into_iter()), g);
+            let nnode = LR0Node::new(HashSet::from_iter(rules.into_iter()), c, g);
             let (e, _) = self.exist(&nnode);
             if e {
                 continue;

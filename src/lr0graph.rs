@@ -39,12 +39,13 @@ impl<'a> LR0Graph<'a> {
 
         for (c, rules) in steps {
             let nnode = LR0Node::new(HashSet::from_iter(rules.into_iter()), c, g);
-            let (e, _) = self.exist(&nnode);
+            let (e, i) = self.exist(&nnode);
             if e {
+                self.edges[index].insert(c, i);
                 continue;
             }
-            let tmp = self.add_node(nnode);
-            self.edges[index].insert(c, tmp);
+            let i = self.add_node(nnode);
+            self.edges[index].insert(c, i);
         }
         index
     }

@@ -31,6 +31,7 @@ fn main() -> Result<(), &'static str> {
     graph.construct(LR0Node::default(&g));
 
     let lr0t = LR0Table::new(graph, &g);
+    println!("{:?}", lr0t);
     println!("{}", lr0t);
 
     let mut autom = StackAutomata::new(lr0t, "a+a$", &g);

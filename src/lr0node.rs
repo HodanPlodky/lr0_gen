@@ -4,7 +4,7 @@ use crate::{lr0rule::LR0Rule, Grammar};
 
 #[derive(Debug)]
 pub struct LR0Node<'a> {
-    pub(crate) from : char,
+    pub(crate) from: char,
     base: HashSet<LR0Rule>,
     closure: HashSet<LR0Rule>,
     pub(crate) gramm: &'a Grammar,
@@ -19,7 +19,7 @@ impl PartialEq for LR0Node<'_> {
 impl Eq for LR0Node<'_> {}
 
 impl<'a> LR0Node<'a> {
-    pub(crate) fn new(base: HashSet<LR0Rule>, from :char, gramm: &'a Grammar) -> Self {
+    pub(crate) fn new(base: HashSet<LR0Rule>, from: char, gramm: &'a Grammar) -> Self {
         Self {
             from,
             base,
@@ -147,10 +147,31 @@ mod tests {
             ],
             &g4,
         );
+
+        let mut g = Grammar::new(
+            HashSet::from(['S', 'E', 'T']),
+            HashSet::from(['(', ')', 'a', '$', '+']),
+        );
+        g.add_rule('S', "E$").unwrap();
+        g.add_rule('E', "E+T").unwrap();
+        g.add_rule('E', "T").unwrap();
+        g.add_rule('T', "a").unwrap();
+        g.add_rule('T', "(E)").unwrap();
+
+        test_closure(
+            vec![LR0Rule::new(0, 0)],
+            vec![
+                LR0Rule::new(1, 0),
+                LR0Rule::new(2, 0),
+                LR0Rule::new(3, 0),
+                LR0Rule::new(4, 0),
+            ],
+            &g,
+        );
     }
 
     fn test_steps(base: Vec<LR0Rule>, syms: Vec<char>, gramm: &Grammar) {
-        let mut lr0node = LR0Node::new(HashSet::from_iter(base.into_iter()), gramm);
+        let mut lr0node = LR0Node::new(HashSet::from_iter(base.into_iter()), 'X', gramm);
         lr0node.create_closure();
         let gen_syms = lr0node.get_steps();
 
@@ -194,5 +215,18 @@ mod tests {
         g4.add_rule('B', "a").unwrap();
         g4.add_rule('C', "a").unwrap();
         test_steps(vec![LR0Rule::new(0, 0)], vec!['A', 'a', 'B'], &g4);
+
+        let mut g = Grammar::new(
+            HashSet::from(['S', 'E', 'T']),
+            HashSet::from(['(', ')', 'a', '$', '+']),
+        );
+        g.add_rule('S', "E$").unwrap();
+        g.add_rule('E', "E+T").unwrap();
+        g.add_rule('E', "T").unwrap();
+        g.add_rule('T', "a").unwrap();
+        g.add_rule('T', "(E)").unwrap();
+
+        test_steps(vec![LR0Rule::new(0, 0)], vec!['E', 'a', '(', 'T'], &g);
+        test_steps(vec![LR0Rule::new(1, 2)], vec!['a', '(', 'T'], &g);
     }
 }

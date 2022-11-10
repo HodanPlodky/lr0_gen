@@ -26,7 +26,7 @@ impl<'a> LR0Graph<'a> {
         (false, 0)
     }
 
-    fn add_node(&mut self, node: LR0Node<'a>) {
+    fn add_node(&mut self, node: LR0Node<'a>) -> usize {
         let mut node = node;
         node.create_closure();
         self.nodes.push(node);
@@ -37,18 +37,16 @@ impl<'a> LR0Graph<'a> {
         let steps = self.nodes[index].get_steps();
         let g = self.nodes[index].gramm;
 
-        let mut nidx = index + 1;
         for (c, rules) in steps {
             let nnode = LR0Node::new(HashSet::from_iter(rules.into_iter()), c, g);
             let (e, _) = self.exist(&nnode);
             if e {
                 continue;
             }
-            self.edges[index].insert(c, nidx);
-            self.add_node(nnode);
-
-            nidx += 1;
+            let tmp = self.add_node(nnode);
+            self.edges[index].insert(c, tmp);
         }
+        index
     }
 
     pub(crate) fn construct(&mut self, start_node: LR0Node<'a>) {

@@ -2,8 +2,8 @@ use std::{collections::HashMap, fmt::Display};
 
 use crate::{grammar::Grammar, lr0graph::LR0Graph};
 
-#[derive(PartialEq, Eq, Debug)]
-enum Action {
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+pub(crate) enum Action {
     Shift,
     Accept,
     Reduction(usize),
@@ -96,5 +96,21 @@ impl LR0Table {
             goto: graph.edges,
             syms,
         }
+    }
+
+    pub(crate) fn get_action(&self, state : usize) -> Option<&Action> {
+        let (_, a) = self.action.get(state)?;
+        Some(a)
+    }
+
+    pub(crate) fn get_char(&self, state : usize) -> Option<char> {
+        let (c, _) = self.action.get(state)?;
+        Some(*c)
+    }
+
+    pub(crate) fn get_goto(&self, state : usize, c : char) -> Option<usize> {
+        let goto_line = self.goto.get(state)?;
+        println!("{:?}", goto_line);
+        goto_line.get(&c).copied()
     }
 }

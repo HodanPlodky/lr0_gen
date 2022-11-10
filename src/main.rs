@@ -3,10 +3,11 @@ mod lr0graph;
 mod lr0node;
 mod lr0rule;
 mod lr0table;
+mod stackautomata;
 
 use std::collections::HashSet;
 
-use crate::{grammar::Grammar, lr0graph::LR0Graph, lr0node::LR0Node, lr0table::LR0Table};
+use crate::{grammar::Grammar, lr0graph::LR0Graph, lr0node::LR0Node, lr0table::LR0Table, stackautomata::StackAutomata};
 
 fn main() -> Result<(), &'static str> {
     //let mut g = Grammar::new(HashSet::from(['S', 'A']), HashSet::from(['a']));
@@ -32,5 +33,8 @@ fn main() -> Result<(), &'static str> {
     let lr0t = LR0Table::new(graph, &g);
     println!("{}", lr0t);
 
+    let mut autom = StackAutomata::new(lr0t, "a+a$", &g);
+    autom.run();
+    println!("{}", autom);
     Ok(())
 }

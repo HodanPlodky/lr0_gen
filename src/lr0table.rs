@@ -110,7 +110,6 @@ impl LR0Table {
 
     pub(crate) fn get_goto(&self, state : usize, c : char) -> Option<usize> {
         let goto_line = self.goto.get(state)?;
-        println!("{:?}", goto_line);
         goto_line.get(&c).copied()
     }
 }

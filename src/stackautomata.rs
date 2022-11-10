@@ -51,11 +51,10 @@ impl<'a> StackAutomata<'a> {
         }
     }
 
-    fn compare_stack(&mut self, rule: &Rule) -> Option<()> {
+    fn compare_stack(&mut self, rule: &Rule) -> Option<char> {
         if rule.right.len() > self.stack.len() {
             return None;
         }
-
         for c in rule.right.iter().rev() {
             let state = self.stack.pop()?;
             let tmp = self.table.get_char(state)?;
@@ -63,7 +62,7 @@ impl<'a> StackAutomata<'a> {
                 return None;
             }
         }
-        Some(())
+        Some(rule.left)
     }
 
     pub(crate) fn run(&mut self) -> Option<()> {
@@ -79,31 +78,23 @@ impl<'a> StackAutomata<'a> {
     pub(crate) fn step(&mut self) -> Option<Action> {
         let top_stack = self.top()?;
         let action = self.table.get_action(top_stack)?;
-        println!("{:?}", action);
         match action {
             Action::Shift => {
                 let c = self.next_char()?;
-                println!("{:?}", c);
-                println!("Goto {:?}", self.get_goto(c));
                 self.stack.push(self.get_goto(c)?);
                 Some(Action::Shift)
             }
             Action::Accept => {
                 let x = 0;
                 let rule = self.gramm.rules.get(x)?;
-                self.compare_stack(rule)?;
-                let state = self.top()?;
-                let c = self.table.get_char(state)?;
-                self.stack.push(self.get_goto(c)?);
+                let c = self.compare_stack(rule)?;
                 self.result.push(x);
                 Some(Action::Accept)
             }
             Action::Reduction(x) => {
                 let x = x.clone();
                 let rule = self.gramm.rules.get(x)?;
-                self.compare_stack(rule)?;
-                let state = self.top()?;
-                let c = self.table.get_char(state)?;
+                let c = self.compare_stack(rule)?;
                 self.stack.push(self.get_goto(c)?);
                 self.result.push(x);
                 Some(Action::Reduction(x))
@@ -127,7 +118,6 @@ impl<'a> StackAutomata<'a> {
 
     pub(crate) fn get_goto(&self, c: char) -> Option<usize> {
         let state = self.top()?;
-        println!("{:?}", state);
         self.table.get_goto(state, c)
     }
 }

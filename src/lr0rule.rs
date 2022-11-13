@@ -23,6 +23,14 @@ impl LR0Rule {
         }
     }
 
+    pub(crate) fn get_left(&self, gramm: &Grammar) -> Option<char> {
+        if gramm.rules.len() <= self.rule {
+            return None;
+        }
+
+        Some(gramm.rules[self.rule].left)
+    }
+
     pub(crate) fn next_rule(&self) -> Self {
         LR0Rule::new(self.rule, self.place + 1)
     }

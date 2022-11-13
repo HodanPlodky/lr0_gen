@@ -24,7 +24,7 @@ impl Display for Action {
 }
 
 impl Action {
-    fn update(&self, new: Action) -> Action {
+    pub(crate) fn update(&self, new: Action) -> Action {
         match (self, new) {
             (Action::Shift | Action::Empty, Action::Shift) => Action::Shift,
             (Action::Empty, Action::Reduction(0)) => Action::Accept,

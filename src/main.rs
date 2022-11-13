@@ -4,6 +4,7 @@ mod lr0node;
 mod lr0rule;
 mod lr0table;
 mod stackautomata;
+mod slr1table;
 
 use std::collections::HashSet;
 

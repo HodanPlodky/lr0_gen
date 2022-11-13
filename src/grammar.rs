@@ -1,5 +1,11 @@
 use std::{collections::HashSet, fmt::Display};
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+pub(crate) enum Sym {
+    Normal(char),
+    Eps,
+}
+
 #[derive(Debug)]
 pub struct Grammar {
     pub(crate) non_terms: HashSet<char>,
@@ -76,6 +82,66 @@ impl Grammar {
         for i in 0..(self.rules.len()) {
             if self.rules[i].left == sym {
                 res.push(i);
+            }
+        }
+        res
+    }
+
+    pub(crate) fn first(&self, rule: usize) -> HashSet<Sym> {
+        if self.rules.len() <= rule {
+            return HashSet::new();
+        }
+        let right = &self.rules[rule].right;
+        if right.len() == 0 {
+            return HashSet::new();
+        }
+        if self.is_term(right.first().unwrap()) {
+            return HashSet::from([Sym::Normal(right.first().copied().unwrap())]);
+        }
+        let tmp = right.first().unwrap();
+        let rules = self.rule_for_sym(*tmp);
+        let mut res = HashSet::new();
+        for r in rules {
+            let tmp = self.first(r);
+            res = HashSet::from_iter(res.union(&tmp).map(|x| *x));
+        }
+        res
+    }
+
+    fn first_from(&self, chrs: &[char]) -> HashSet<Sym> {
+        if chrs.len() == 0 {
+            return HashSet::from([Sym::Eps]);
+        }
+        if self.is_term(&chrs[0]) {
+            return HashSet::from([Sym::Normal(chrs[0])]);
+        }
+        let tmp = chrs[0];
+        let rules = self.rule_for_sym(tmp);
+        let mut res = HashSet::new();
+        for r in rules {
+            let tmp = self.first(r);
+            res = HashSet::from_iter(res.union(&tmp).map(|x| *x));
+        }
+        res
+    }
+
+    pub(crate) fn follow(&self, non_term: char) -> HashSet<Sym> {
+        let mut res = HashSet::new();
+        if self.rules.len() > 0 {
+            if self.rules.get(0).unwrap().left == non_term {
+                res.insert(Sym::Eps);
+            }
+        }
+        for r in &self.rules {
+            for i in 0..r.right.len() {
+                if r.right[i] == non_term {
+                    if i >= r.right.len() - 1 {
+                        res = HashSet::from_iter(res.union(&self.follow(r.left)).copied());
+                    } else {
+                        let tmp = &r.right[i..];
+                        res = HashSet::from_iter(res.union(&self.first_from(tmp)).copied());
+                    }
+                }
             }
         }
         res

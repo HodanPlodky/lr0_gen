@@ -116,14 +116,14 @@ impl Grammar {
             for i in 0..self.rules.len() {
                 let rule = &self.rules[i];
                 let orig = self.first[i].len();
-                self.first_from(&rule.right[0..]);
-                flag = orig != self.first[i].len();
+                self.first[i] = HashSet::from_iter(self.first[i].union(&self.first_from(&rule.right[0..])).copied());
+                flag |= orig != self.first[i].len();
             }
         }
     }
 
     fn first_from(&self, syms: &[char]) -> HashSet<Sym> {
-        let mut res : HashSet<Sym> = HashSet::new();
+        let mut res: HashSet<Sym> = HashSet::new();
         if syms.len() == 0 {
             res.insert(Sym::Eps);
         } else if self.is_term(&syms[0]) {
@@ -147,7 +147,7 @@ impl Grammar {
         self.follow.get(&non_term).unwrap()
     }
 
-    fn add_follow_from(&mut self, rule : usize) -> bool {
+    fn add_follow_from(&mut self, rule: usize) -> bool {
         let mut added = false;
         let rule = &self.rules[rule];
         for i in 0..rule.right.len() {
@@ -156,12 +156,12 @@ impl Grammar {
 
                 let orig = self.follow.get(&nterm).unwrap();
                 let orig_len = orig.len();
-                let mut to_add = self.first_from(&rule.right[i+1..]);
+                let mut to_add = self.first_from(&rule.right[i + 1..]);
                 if to_add.contains(&Sym::Eps) {
                     to_add.remove(&Sym::Eps);
                     to_add = HashSet::from_iter(to_add.union(self.follow(rule.left)).copied());
                 }
-                let new : HashSet<Sym> = HashSet::from_iter(orig.union(&to_add).copied());
+                let new: HashSet<Sym> = HashSet::from_iter(orig.union(&to_add).copied());
                 added = new.len() != orig_len;
                 self.follow.insert(nterm, new);
             }
@@ -173,12 +173,13 @@ impl Grammar {
         for n in &self.non_terms {
             self.follow.insert(*n, HashSet::new());
         }
-        self.follow.insert(self.rules[0].left, HashSet::from([Sym::Eps]));
+        self.follow
+            .insert(self.rules[0].left, HashSet::from([Sym::Eps]));
         let mut flag = true;
         while flag {
             flag = false;
             for r in 0..self.rules.len() {
-                flag = self.add_follow_from(r);
+                flag |= self.add_follow_from(r);
             }
         }
     }

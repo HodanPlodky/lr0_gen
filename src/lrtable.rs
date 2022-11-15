@@ -42,8 +42,8 @@ impl Action {
     }
 }
 
-pub trait Table {
-    fn get_action(&self, state : usize, sym : Sym) -> Option<Action>;
-    fn get_goto(&self, state : usize, chr : char) -> Option<usize>;
-    fn get_char(&self, state : usize) -> Option<char>;
+pub trait Table: Display {
+    fn get_action(&self, state: usize, sym: Sym) -> Option<Action>;
+    fn get_goto(&self, state: usize, chr: char) -> Option<usize>;
+    fn get_char(&self, state: usize) -> Option<char>;
 }

@@ -26,14 +26,17 @@ fn main() -> Result<(), &'static str> {
     //println!("{}", lr0t);
 
     let mut g = Grammar::new(
-        HashSet::from(['S', 'E', 'T']),
-        HashSet::from(['(', ')', 'a', '$', '+']),
+        HashSet::from(['S', 'E', 'T', 'F']),
+        HashSet::from(['(', ')', 'a', '$', '+', '*']),
     );
-    g.add_rule('S', "E$")?;
+    g.add_rule('S', "E")?;
     g.add_rule('E', "E+T")?;
     g.add_rule('E', "T")?;
-    g.add_rule('T', "a")?;
-    g.add_rule('T', "(E)")?;
+    g.add_rule('T', "T*F")?;
+    g.add_rule('T', "F")?;
+    g.add_rule('F', "a")?;
+    g.add_rule('F', "(E)")?;
+    g.create_first();
     g.create_follow();
 
     let mut graph = LR0Graph::new();
@@ -43,7 +46,7 @@ fn main() -> Result<(), &'static str> {
     //println!("{:?}", lr0t);
     println!("{}", lr0t);
 
-    let mut autom = StackAutomata::new(&lr0t, "a+a$", &g);
+    let mut autom = StackAutomata::new(&lr0t, "(a*a+a)*a+a", &g);
     autom.run();
     println!("{}", autom);
     Ok(())

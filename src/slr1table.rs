@@ -74,7 +74,6 @@ impl SLR1Table {
                             res.insert(Sym::Normal(s), tmp);
                         }
                         None => {
-                            println!("{:?}", gramm.follow(r.get_left(gramm).unwrap()));
                             for f in gramm.follow(r.get_left(gramm).unwrap()) {
                                 let tmp = res.get(&f).unwrap().update(Action::Reduction(r.rule));
                                 res.insert(f.clone(), tmp);

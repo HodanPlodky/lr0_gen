@@ -1,18 +1,16 @@
 use std::fmt::Display;
 
 use crate::{
-    grammar::{Grammar, Rule},
-    lr0table::{Action, LR0Table},
+    grammar::{Grammar, Rule, Sym}, lr0table::LR0Table, lrtable::{Action, Table},
 };
 
-#[derive(Debug)]
 pub(crate) struct StackAutomata<'a> {
     stack: Vec<usize>,
-    table: LR0Table,
     input: Vec<char>,
     result: Vec<usize>,
     place: usize,
     gramm: &'a Grammar,
+    table: &'a dyn Table,
 }
 
 impl Display for StackAutomata<'_> {
@@ -40,7 +38,7 @@ impl Display for StackAutomata<'_> {
 }
 
 impl<'a> StackAutomata<'a> {
-    pub(crate) fn new(table: LR0Table, input: &'a str, gramm: &'a Grammar) -> Self {
+    pub(crate) fn new(table: &'a dyn Table, input: &'a str, gramm: &'a Grammar) -> Self {
         Self {
             stack: vec![0],
             table,
@@ -77,7 +75,11 @@ impl<'a> StackAutomata<'a> {
 
     pub(crate) fn step(&mut self) -> Option<Action> {
         let top_stack = self.top()?;
-        let action = self.table.get_action(top_stack)?;
+        let nchar = match self.peek_char() {
+            Some(x) => Sym::Normal(x),
+            None => Sym::Eps,
+        };
+        let action = self.table.get_action(top_stack, nchar)?;
         match action {
             Action::Shift => {
                 let c = self.next_char()?;
@@ -108,9 +110,14 @@ impl<'a> StackAutomata<'a> {
     }
 
     pub(crate) fn next_char(&mut self) -> Option<char> {
+        let res = self.peek_char()?;
+        self.place += 1;
+        Some(res)
+    }
+
+    pub(crate) fn peek_char(&mut self) -> Option<char> {
         if self.place < self.input.len() {
-            self.place += 1;
-            self.input.get(self.place - 1).copied()
+            self.input.get(self.place).copied()
         } else {
             None
         }

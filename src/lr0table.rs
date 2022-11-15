@@ -1,46 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{grammar::Grammar, lr0graph::LR0Graph};
-
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
-pub(crate) enum Action {
-    Shift,
-    Accept,
-    Reduction(usize),
-    Error,
-    Empty,
-}
-
-impl Display for Action {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Action::Shift => write!(f, "S"),
-            Action::Accept => write!(f, "A"),
-            Action::Reduction(x) => write!(f, "R{}", x),
-            Action::Error => write!(f, "E"),
-            Action::Empty => write!(f, ""),
-        }
-    }
-}
-
-impl Action {
-    pub(crate) fn update(&self, new: Action) -> Action {
-        match (self, new) {
-            (Action::Shift | Action::Empty, Action::Shift) => Action::Shift,
-            (Action::Empty, Action::Reduction(0)) => Action::Accept,
-            (Action::Accept, Action::Reduction(0)) => Action::Accept,
-            (Action::Empty, Action::Reduction(r)) => Action::Reduction(r),
-            (Action::Reduction(r1), Action::Reduction(r2)) => {
-                if *r1 == r2 {
-                    Action::Reduction(*r1)
-                } else {
-                    Action::Error
-                }
-            }
-            _ => Action::Error,
-        }
-    }
-}
+use crate::{grammar::{Grammar, Sym}, lr0graph::LR0Graph, lrtable::{Action, Table}};
 
 #[derive(Debug)]
 pub(crate) struct LR0Table {
@@ -97,18 +57,19 @@ impl LR0Table {
             syms,
         }
     }
-
-    pub(crate) fn get_action(&self, state : usize) -> Option<&Action> {
-        let (_, a) = self.action.get(state)?;
+}
+impl Table for LR0Table {
+    fn get_action(&self, state : usize, sym : Sym) -> Option<Action> {
+        let (_, a) = self.action.get(state).copied()?;
         Some(a)
     }
 
-    pub(crate) fn get_char(&self, state : usize) -> Option<char> {
+    fn get_char(&self, state : usize) -> Option<char> {
         let (c, _) = self.action.get(state)?;
         Some(*c)
     }
 
-    pub(crate) fn get_goto(&self, state : usize, c : char) -> Option<usize> {
+    fn get_goto(&self, state : usize, c : char) -> Option<usize> {
         let goto_line = self.goto.get(state)?;
         goto_line.get(&c).copied()
     }

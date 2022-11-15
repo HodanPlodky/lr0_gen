@@ -1,9 +1,21 @@
-use std::{collections::HashSet, fmt::Display};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
-pub(crate) enum Sym {
+pub enum Sym {
     Normal(char),
     Eps,
+}
+
+impl Display for Sym {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Sym::Normal(x) => write!(f, "{}", x),
+            Sym::Eps => write!(f, "eps"),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -12,6 +24,8 @@ pub struct Grammar {
     pub(crate) terms: HashSet<char>,
 
     pub(crate) rules: Vec<Rule>,
+
+    follow: HashMap<char, HashSet<Sym>>,
 }
 
 impl Display for Grammar {
@@ -26,6 +40,7 @@ impl Grammar {
             non_terms,
             terms,
             rules: vec![],
+            follow: HashMap::new(),
         }
     }
 
@@ -98,7 +113,25 @@ impl Grammar {
         if self.is_term(right.first().unwrap()) {
             return HashSet::from([Sym::Normal(right.first().copied().unwrap())]);
         }
+        let left = self.rules[rule].left;
         let tmp = right.first().unwrap();
+        if left == *tmp {
+            let rules = self.rule_for_sym(left);
+            let rules: Vec<usize> = rules
+                .into_iter()
+                .filter(|x| {
+                    if *x == rule {
+                        return false;
+                    }
+                    match self.rules[*x].right.first() {
+                        Some(c) => self.is_term(c),
+                        None => false,
+                    }
+                })
+                .collect();
+            let other_first = rules.iter().map(|x| self.first(*x));
+            return other_first.re
+        }
         let rules = self.rule_for_sym(*tmp);
         let mut res = HashSet::new();
         for r in rules {
@@ -125,30 +158,47 @@ impl Grammar {
         res
     }
 
-    pub(crate) fn follow(&self, non_term: char) -> HashSet<Sym> {
+    fn create_follow_for(&mut self, non_term: char) -> HashSet<Sym> {
+        if let Some(x) = self.follow.get(&non_term) {
+            return x.clone();
+        }
         let mut res = HashSet::new();
         if self.rules.len() > 0 {
             if self.rules.get(0).unwrap().left == non_term {
                 res.insert(Sym::Eps);
             }
         }
-        for r in &self.rules {
+        let tmpr = self.rules.clone();
+        for r in &tmpr {
             for i in 0..r.right.len() {
                 if r.right[i] == non_term {
                     if i >= r.right.len() - 1 {
-                        res = HashSet::from_iter(res.union(&self.follow(r.left)).copied());
+                        res =
+                            HashSet::from_iter(res.union(&self.create_follow_for(r.left)).copied());
                     } else {
-                        let tmp = &r.right[i..];
+                        let tmp = &r.right[i..r.right.len()];
                         res = HashSet::from_iter(res.union(&self.first_from(tmp)).copied());
                     }
                 }
             }
         }
-        res
+        self.follow.insert(non_term, res);
+        self.follow.get(&non_term).unwrap().clone()
+    }
+
+    pub(crate) fn follow(&self, non_term: char) -> &HashSet<Sym> {
+        self.follow.get(&non_term).unwrap()
+    }
+
+    pub(crate) fn create_follow(&mut self) {
+        let tmp = self.non_terms.clone();
+        tmp.iter().for_each(|n| {
+            self.create_follow_for(n.clone());
+        });
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Rule {
     pub(crate) left: char,
     pub(crate) right: Vec<char>,

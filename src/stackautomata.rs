@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use crate::{
-    grammar::{Grammar, Rule, Sym}, lr0table::LR0Table, lrtable::{Action, Table},
+    grammar::{Grammar, Rule, Sym}, table::lrtable::{Action, Table},
 };
 
 pub(crate) struct StackAutomata<'a> {

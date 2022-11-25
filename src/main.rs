@@ -1,11 +1,7 @@
 mod grammar;
-mod lr0graph;
-mod lr0node;
-mod lr0rule;
-mod lr0table;
-mod lrtable;
-mod slr1table;
 mod stackautomata;
+mod graph;
+mod table;
 
 use std::{
     collections::HashSet,
@@ -15,8 +11,8 @@ use std::{
 };
 
 use crate::{
-    grammar::Grammar, lr0graph::LR0Graph, lr0node::LR0Node, lr0table::LR0Table, lrtable::Table,
-    slr1table::SLR1Table, stackautomata::StackAutomata,
+    grammar::Grammar, graph::lr0graph::LRGraph, graph::lr0node::LR0Node, table::lr0table::LR0Table, table::lrtable::Table,
+    table::slr1table::SLR1Table, stackautomata::StackAutomata,
 };
 
 fn load_lines(path: String) -> std::io::Result<Vec<String>> {
@@ -99,7 +95,7 @@ fn main() -> Result<(), &'static str> {
     let g = load()?;
     println!("{:?}", g);
 
-    let mut graph = LR0Graph::new();
+    let mut graph = LRGraph::new();
     graph.construct(LR0Node::default(&g));
 
     println!("1. LR0\n2. SLR(1)");

@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::{lr0rule::LR0Rule, Grammar};
+use crate::{graph::lr0rule::LR0Rule, Grammar};
 
 #[derive(Debug)]
 pub struct LR0Node<'a> {

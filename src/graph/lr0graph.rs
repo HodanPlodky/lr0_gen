@@ -1,16 +1,16 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::lr0node::LR0Node;
+use crate::graph::lr0node::LR0Node;
 
 #[derive(Debug)]
-pub(crate) struct LR0Graph<'a> {
+pub(crate) struct LRGraph<'a> {
     pub(crate) nodes: Vec<LR0Node<'a>>,
     pub(crate) edges: Vec<HashMap<char, usize>>,
 }
 
-impl<'a> LR0Graph<'a> {
+impl<'a> LRGraph<'a> {
     pub(crate) fn new() -> Self {
-        LR0Graph {
+        LRGraph {
             nodes: vec![],
             edges: vec![],
         }

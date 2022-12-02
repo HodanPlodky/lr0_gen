@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{grammar::{Grammar, Sym}, graph::lr0graph::LRGraph, table::lrtable::{Action, Table}};
+use crate::{grammar::{Grammar, Sym}, graph::{lrgraph::LR0Graph, rule::LRRule}, table::lrtable::{Action, Table}};
 
 #[derive(Debug)]
 pub(crate) struct LR0Table {
@@ -33,7 +33,7 @@ impl Display for LR0Table {
 }
 
 impl LR0Table {
-    pub(crate) fn new(graph: LRGraph, g: &Grammar) -> Self {
+    pub(crate) fn new(graph: LR0Graph, g: &Grammar) -> Self {
         let action: Vec<(char, Action)> = graph
             .nodes
             .iter()

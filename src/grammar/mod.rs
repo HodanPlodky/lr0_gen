@@ -123,7 +123,7 @@ impl Grammar {
         }
     }
 
-    fn first_from(&self, syms: &[char]) -> HashSet<Sym> {
+    pub fn first_from(&self, syms: &[char]) -> HashSet<Sym> {
         let mut res: HashSet<Sym> = HashSet::new();
         if syms.len() == 0 {
             res.insert(Sym::Eps);

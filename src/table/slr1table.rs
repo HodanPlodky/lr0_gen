@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Display};
 
 use crate::{
     grammar::{Grammar, Sym},
-    graph::lr0graph::LRGraph,
+    graph::{lrgraph::LR0Graph, rule::LRRule},
     table::lrtable::{Action, Table},
 };
 
@@ -51,7 +51,7 @@ impl Display for SLR1Table {
 }
 
 impl SLR1Table {
-    pub(crate) fn new(graph: LRGraph, gramm: &Grammar) -> Self {
+    pub(crate) fn new(graph: LR0Graph, gramm: &Grammar) -> Self {
         let mut syms: Vec<char> = vec![];
         gramm
             .terms

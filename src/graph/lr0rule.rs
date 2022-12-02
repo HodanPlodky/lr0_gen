@@ -1,4 +1,8 @@
+use std::collections::HashSet;
+
 use crate::Grammar;
+
+use super::rule::LRRule;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct LR0Rule {
@@ -10,8 +14,14 @@ impl LR0Rule {
     pub fn new(rule: usize, place: usize) -> Self {
         Self { rule, place }
     }
+}
 
-    pub(crate) fn get_sym(&self, gramm: &Grammar) -> Option<char> {
+impl LRRule for LR0Rule {
+    fn default() -> Self {
+        LR0Rule::new(0, 0)
+    }
+
+    fn get_sym(&self, gramm: &Grammar) -> Option<char> {
         if gramm.rules.len() <= self.rule {
             return None;
         }
@@ -23,7 +33,7 @@ impl LR0Rule {
         }
     }
 
-    pub(crate) fn get_left(&self, gramm: &Grammar) -> Option<char> {
+    fn get_left(&self, gramm: &Grammar) -> Option<char> {
         if gramm.rules.len() <= self.rule {
             return None;
         }
@@ -31,8 +41,20 @@ impl LR0Rule {
         Some(gramm.rules[self.rule].left)
     }
 
-    pub(crate) fn next_rule(&self) -> Self {
+    fn next_rule(&self) -> Self {
         LR0Rule::new(self.rule, self.place + 1)
+    }
+
+    fn create_closure(&self, gramm: &Grammar) -> HashSet<LR0Rule> {
+        let mut res : HashSet<LR0Rule> = HashSet::new();
+        if let Some(x) = self.get_sym(gramm) {
+            if gramm.is_non_term(&x) {
+                gramm.rule_for_sym(x).iter().for_each(|r| {
+                    res.insert(LR0Rule::new(*r, 0));
+                });
+            }
+        }
+        res
     }
 }
 

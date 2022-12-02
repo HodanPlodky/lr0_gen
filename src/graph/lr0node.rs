@@ -1,85 +1,15 @@
-use std::collections::{HashMap, HashSet};
+use crate::graph::lr0rule::LR0Rule;
 
-use crate::{graph::lr0rule::LR0Rule, Grammar};
+use super::lrnode::LRNode;
 
-#[derive(Debug)]
-pub struct LR0Node<'a> {
-    pub(crate) from: char,
-    base: HashSet<LR0Rule>,
-    closure: HashSet<LR0Rule>,
-    pub(crate) gramm: &'a Grammar,
-}
-
-impl PartialEq for LR0Node<'_> {
-    fn eq(&self, other: &Self) -> bool {
-        self.base == other.base
-    }
-}
-
-impl Eq for LR0Node<'_> {}
-
-impl<'a> LR0Node<'a> {
-    pub(crate) fn new(base: HashSet<LR0Rule>, from: char, gramm: &'a Grammar) -> Self {
-        Self {
-            from,
-            base,
-            closure: HashSet::new(),
-            gramm,
-        }
-    }
-
-    pub(crate) fn default(g: &'a Grammar) -> Self {
-        Self::new(HashSet::from([LR0Rule::new(0, 0)]), g.rules[0].left, g)
-    }
-
-    pub(crate) fn create_closure(&mut self) {
-        let mut flag = true;
-        let mut acc = self.base.clone();
-        while flag {
-            let mut tmp: HashSet<LR0Rule> = HashSet::new();
-            acc.iter().for_each(|b| {
-                if let Some(x) = b.get_sym(self.gramm) {
-                    if self.gramm.is_non_term(&x) {
-                        self.gramm.rule_for_sym(x).iter().for_each(|r| {
-                            tmp.insert(LR0Rule::new(*r, 0));
-                        });
-                    }
-                }
-            });
-            acc = tmp;
-            let l = self.closure.len();
-            for i in acc.iter() {
-                self.closure.insert(i.clone());
-            }
-            flag = self.closure.len() != l;
-        }
-    }
-
-    pub(crate) fn get_steps(&self) -> HashMap<char, Vec<LR0Rule>> {
-        let mut res: HashMap<char, Vec<LR0Rule>> = HashMap::new();
-        for rule in self.base.union(&self.closure) {
-            if let Some(c) = rule.get_sym(&self.gramm) {
-                let tmp = rule.next_rule();
-                match res.get_mut(&c) {
-                    Some(v) => v.push(tmp),
-                    None => {
-                        res.insert(c, vec![tmp]);
-                    }
-                }
-            }
-        }
-        res
-    }
-
-    pub(crate) fn all_rules(&self) -> HashSet<&LR0Rule> {
-        self.base
-            .union(&self.closure)
-            .collect::<HashSet<&LR0Rule>>()
-    }
-}
+pub type LR0Node<'a> = LRNode<'a, LR0Rule>;
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+
+    use crate::grammar::Grammar;
+
     use super::*;
 
     fn test_closure(rules: Vec<LR0Rule>, closure: Vec<LR0Rule>, gramm: &Grammar) {

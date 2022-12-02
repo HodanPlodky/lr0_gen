@@ -11,7 +11,7 @@ use std::{
 };
 
 use crate::{
-    grammar::Grammar, graph::lr0graph::LRGraph, graph::lr0node::LR0Node, table::lr0table::LR0Table, table::lrtable::Table,
+    grammar::Grammar, graph::lrgraph::LRGraph, graph::lr0node::LR0Node, table::lr0table::LR0Table, table::lrtable::Table,
     table::slr1table::SLR1Table, stackautomata::StackAutomata,
 };
 

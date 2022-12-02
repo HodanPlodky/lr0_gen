@@ -10,7 +10,7 @@ use super::{lrnode::LRNode, rule::LRRule};
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct LR1Rule {
     lr0: LR0Rule,
-    follow: Sym,
+    pub follow: Sym,
 }
 
 impl LR1Rule {
@@ -46,6 +46,10 @@ impl LR1Rule {
         } else {
             HashSet::from([self.follow])
         }
+    }
+
+    pub fn rule(&self) -> usize {
+        self.lr0.rule
     }
 }
 

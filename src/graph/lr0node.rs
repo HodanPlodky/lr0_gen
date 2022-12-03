@@ -1,8 +1,8 @@
 use crate::graph::lr0rule::LR0Rule;
 
-use super::lrnode::LRNode;
+use super::lrnode::LRNodeStruct;
 
-pub type LR0Node<'a> = LRNode<'a, LR0Rule>;
+pub type LR0Node<'a> = LRNodeStruct<'a, LR0Rule>;
 
 #[cfg(test)]
 mod tests {

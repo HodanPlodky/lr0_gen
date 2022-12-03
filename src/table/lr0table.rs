@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{grammar::{Grammar, Sym}, graph::{lrgraph::LR0Graph, rule::LRRule}, table::lrtable::{Action, Table}};
+use crate::{grammar::{Grammar, Sym}, graph::{lrgraph::LR0Graph, rule::LRRule, lrnode::LRNode}, table::lrtable::{Action, Table}};
 
 #[derive(Debug)]
 pub(crate) struct LR0Table {
@@ -45,7 +45,7 @@ impl LR0Table {
                         None => res = res.update(Action::Reduction(r.rule)),
                     }
                 }
-                (x.from, res)
+                (x.from(), res)
             })
             .collect();
         let mut syms : Vec<char> = vec![];

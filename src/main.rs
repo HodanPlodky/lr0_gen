@@ -1,6 +1,6 @@
 mod grammar;
-mod stackautomata;
 mod graph;
+mod stackautomata;
 mod table;
 
 use std::{
@@ -11,8 +11,13 @@ use std::{
 };
 
 use crate::{
-    grammar::Grammar, graph::{lrgraph::LR1Graph, lr1graph::LR1Node}, graph::{lr0node::LR0Node, lrgraph::LR0Graph}, table::lr0table::LR0Table, table::{lrtable::Table, lr1table::LR1Table},
-    table::slr1table::SLR1Table, stackautomata::StackAutomata,
+    grammar::Grammar,
+    graph::{lr0node::LR0Node, lrgraph::LR0Graph},
+    graph::{lr1graph::LR1Node, lrgraph::LR1Graph, lrnode::LRNode},
+    stackautomata::StackAutomata,
+    table::lr0table::LR0Table,
+    table::slr1table::SLR1Table,
+    table::{lr1table::LR1Table, lrtable::Table},
 };
 
 fn load_lines(path: String) -> std::io::Result<Vec<String>> {
@@ -111,17 +116,17 @@ fn main() -> Result<(), &'static str> {
             let mut graph = LR0Graph::new();
             graph.construct(LR0Node::default(&g));
             Box::new(LR0Table::new(graph, &g))
-        },
+        }
         "2" => {
             let mut graph = LR0Graph::new();
             graph.construct(LR0Node::default(&g));
             Box::new(SLR1Table::new(graph, &g))
-        },
+        }
         "3" => {
             let mut graph = LR1Graph::new();
             graph.construct(LR1Node::default(&g));
             Box::new(LR1Table::new(graph, &g))
-        },
+        }
         _ => unreachable!(),
     };
     println!("{}", lrtab);

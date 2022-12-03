@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Display};
 
 use crate::{
     grammar::{Grammar, Sym},
-    graph::{lrgraph::LR0Graph, rule::LRRule},
+    graph::{lrgraph::LR0Graph, rule::LRRule, lrnode::LRNode},
     table::lrtable::{Action, Table},
 };
 
@@ -82,7 +82,7 @@ impl <'a> SLR1Table <'a> {
                         }
                     }
                 }
-                (x.from, res)
+                (x.from(), res)
             })
             .collect();
 

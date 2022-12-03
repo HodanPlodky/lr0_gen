@@ -1,25 +1,35 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, marker::PhantomData};
 
-use super::{lrnode::LRNode, lr0rule::LR0Rule, rule::LRRule, lr1graph::LR1Rule};
+use super::{lr0rule::LR0Rule, lr1graph::{LR1Rule, LR1Node}, lrnode::LRNode, rule::LRRule, lr0node::LR0Node};
 
-pub type LR0Graph<'a> = LRGraph<'a, LR0Rule>;
-pub type LR1Graph<'a> = LRGraph<'a, LR1Rule>;
+pub type LR0Graph<'a> = LRGraph<'a, LR0Node<'a>, LR0Rule>;
+pub type LR1Graph<'a> = LRGraph<'a, LR1Node<'a>, LR1Rule>;
 
 #[derive(Debug)]
-pub struct LRGraph<'a, T> where T: LRRule {
-    pub(crate) nodes: Vec<LRNode<'a, T>>,
+pub struct LRGraph<'a, T, R>
+where
+    R: LRRule,
+    T: LRNode<'a, R>,
+{
+    pub(crate) nodes: Vec<T>,
     pub(crate) edges: Vec<HashMap<char, usize>>,
+    phantom : PhantomData<&'a R>,
 }
 
-impl<'a, T> LRGraph<'a, T> where T: LRRule {
+impl<'a, T, R> LRGraph<'a, T, R>
+where
+    T: LRNode<'a, R>,
+    R: LRRule,
+{
     pub(crate) fn new() -> Self {
         LRGraph {
             nodes: vec![],
             edges: vec![],
+            phantom : PhantomData,
         }
     }
 
-    fn exist(&self, node: &LRNode<T>) -> (bool, usize) {
+    fn exist(&self, node: &T) -> (bool, usize) {
         for i in 0..(self.nodes.len()) {
             if self.nodes[i].eq(node) {
                 return (true, i);
@@ -29,7 +39,7 @@ impl<'a, T> LRGraph<'a, T> where T: LRRule {
         (false, 0)
     }
 
-    fn add_node(&mut self, node: LRNode<'a, T>) -> usize {
+    fn add_node(&mut self, node: T) -> usize {
         let mut node = node;
         node.create_closure();
         self.nodes.push(node);
@@ -38,10 +48,10 @@ impl<'a, T> LRGraph<'a, T> where T: LRRule {
         let index = self.nodes.len() - 1;
 
         let steps = self.nodes[index].get_steps();
-        let g = self.nodes[index].gramm;
+        let g = self.nodes[index].gramm();
 
         for (c, rules) in steps {
-            let nnode = LRNode::new(HashSet::from_iter(rules.into_iter()), c, g);
+            let nnode = T::new(HashSet::from_iter(rules.into_iter()), c, g);
             let (e, i) = self.exist(&nnode);
             if e {
                 self.edges[index].insert(c, i);
@@ -53,7 +63,7 @@ impl<'a, T> LRGraph<'a, T> where T: LRRule {
         index
     }
 
-    pub(crate) fn construct(&mut self, start_node: LRNode<'a, T>) {
+    pub(crate) fn construct(&mut self, start_node: T) {
         self.add_node(start_node);
     }
 }

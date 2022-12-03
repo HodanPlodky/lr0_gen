@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{grammar::{Sym, Grammar}, graph::{lrgraph::LR1Graph, rule::LRRule}};
+use crate::{grammar::{Sym, Grammar}, graph::{lrgraph::LR1Graph, rule::LRRule, lrnode::LRNode}};
 
 use super::lrtable::{Action, Table};
 
@@ -78,7 +78,7 @@ impl <'a> LR1Table <'a> {
                         }
                     }
                 }
-                (x.from, res)
+                (x.from(), res)
             })
             .collect();
 

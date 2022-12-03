@@ -11,7 +11,7 @@ use std::{
 };
 
 use crate::{
-    grammar::Grammar, graph::{lrgraph::{LRGraph, LR1Graph}, lr1graph::LR1Node}, graph::{lr0node::LR0Node, lrgraph::LR0Graph}, table::lr0table::LR0Table, table::{lrtable::Table, lr1table::LR1Table},
+    grammar::Grammar, graph::{lrgraph::LR1Graph, lr1graph::LR1Node}, graph::{lr0node::LR0Node, lrgraph::LR0Graph}, table::lr0table::LR0Table, table::{lrtable::Table, lr1table::LR1Table},
     table::slr1table::SLR1Table, stackautomata::StackAutomata,
 };
 
@@ -93,7 +93,6 @@ where
 
 fn main() -> Result<(), &'static str> {
     let g = load()?;
-    println!("{:?}", g);
 
     println!("1. LR0\n2. SLR(1)\n3. LR(1)");
 

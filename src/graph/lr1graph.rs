@@ -29,7 +29,7 @@ impl LR1Rule {
         if gramm.rules[self.lr0.rule].right.len() <= self.lr0.place {
             None
         } else {
-            Some(&gramm.rules[self.lr0.rule].right[self.lr0.place..])
+            Some(&gramm.rules[self.lr0.rule].right[self.lr0.place+1..])
         }
     }
 

@@ -59,7 +59,7 @@ impl LR0Table {
     }
 }
 impl Table for LR0Table {
-    fn get_action(&self, state : usize, sym : Sym) -> Option<Action> {
+    fn get_action(&self, state : usize, _ : Sym) -> Option<Action> {
         let (_, a) = self.action.get(state).copied()?;
         Some(a)
     }

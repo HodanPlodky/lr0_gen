@@ -1,23 +1,21 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{
-    grammar::{Grammar, Sym},
-    graph::{lrgraph::LR0Graph, rule::LRRule},
-    table::lrtable::{Action, Table},
-};
+use crate::{grammar::{Sym, Grammar}, graph::{lrgraph::LR1Graph, rule::LRRule}};
 
-pub(crate) struct SLR1Table<'a> {
+use super::lrtable::{Action, Table};
+
+pub(crate) struct LR1Table<'a> {
     action: Vec<(char, HashMap<Sym, Action>)>,
     goto: Vec<HashMap<char, usize>>,
     syms: Vec<char>,
-    gramm: &'a Grammar,
+    gramm : &'a Grammar,
 }
 
-impl Display for SLR1Table<'_> {
+impl Display for LR1Table<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "SLR1Table")?;
+        writeln!(f, "LR1Table")?;
         write!(f, "state\t|")?;
-        for c in self.syms.iter().filter(|x| self.gramm.is_term(x)) {
+        for c in self.syms.iter().filter(|x| self.gramm.is_term(x)){
             write!(f, "{}\t", c)?;
         }
         write!(f, "{}\t|", Sym::Eps)?;
@@ -29,7 +27,7 @@ impl Display for SLR1Table<'_> {
             let (c, _) = &self.action[i];
             write!(f, "{}{}\t|", c, i)?;
             let (_, a) = &self.action[i];
-            for c in self.syms.iter().filter(|x| self.gramm.is_term(x)) {
+            for c in self.syms.iter().filter(|x| self.gramm.is_term(x)){
                 match a.get(&Sym::Normal(*c)) {
                     Some(a) => write!(f, "{}\t", a),
                     None => write!(f, " \t"),
@@ -51,8 +49,8 @@ impl Display for SLR1Table<'_> {
     }
 }
 
-impl <'a> SLR1Table <'a> {
-    pub(crate) fn new(graph: LR0Graph, gramm: &'a Grammar) -> Self {
+impl <'a> LR1Table <'a> {
+    pub(crate) fn new(graph: LR1Graph, gramm: &'a Grammar) -> Self {
         let mut syms: Vec<char> = vec![];
         gramm
             .terms
@@ -75,10 +73,8 @@ impl <'a> SLR1Table <'a> {
                             res.insert(Sym::Normal(s), tmp);
                         }
                         None => {
-                            for f in gramm.follow(r.get_left(gramm).unwrap()) {
-                                let tmp = res.get(&f).unwrap().update(Action::Reduction(r.rule));
-                                res.insert(f.clone(), tmp);
-                            }
+                            let tmp = res.get(&r.follow).unwrap().update(Action::Reduction(r.rule()));
+                            res.insert(r.follow.clone(), tmp);
                         }
                     }
                 }
@@ -95,7 +91,7 @@ impl <'a> SLR1Table <'a> {
     }
 }
 
-impl Table for SLR1Table<'_> {
+impl Table for LR1Table<'_> {
     fn get_action(&self, state: usize, sym: Sym) -> Option<Action> {
         let (_, a) = self.action.get(state)?;
         a.get(&sym).copied()

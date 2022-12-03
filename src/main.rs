@@ -1,11 +1,7 @@
 mod grammar;
-mod lr0graph;
-mod lr0node;
-mod lr0rule;
-mod lr0table;
-mod lrtable;
-mod slr1table;
 mod stackautomata;
+mod graph;
+mod table;
 
 use std::{
     collections::HashSet,
@@ -15,8 +11,8 @@ use std::{
 };
 
 use crate::{
-    grammar::Grammar, lr0graph::LR0Graph, lr0node::LR0Node, lr0table::LR0Table, lrtable::Table,
-    slr1table::SLR1Table, stackautomata::StackAutomata,
+    grammar::Grammar, graph::{lrgraph::LR1Graph, lr1graph::LR1Node}, graph::{lr0node::LR0Node, lrgraph::LR0Graph}, table::lr0table::LR0Table, table::{lrtable::Table, lr1table::LR1Table},
+    table::slr1table::SLR1Table, stackautomata::StackAutomata,
 };
 
 fn load_lines(path: String) -> std::io::Result<Vec<String>> {
@@ -97,15 +93,11 @@ where
 
 fn main() -> Result<(), &'static str> {
     let g = load()?;
-    println!("{:?}", g);
 
-    let mut graph = LR0Graph::new();
-    graph.construct(LR0Node::default(&g));
-
-    println!("1. LR0\n2. SLR(1)");
+    println!("1. LR0\n2. SLR(1)\n3. LR(1)");
 
     let ttype = get_input(|x: &String| match x.parse::<i32>() {
-        Ok(x) => x == 1 || x == 2,
+        Ok(x) => x == 1 || x == 2 || x == 3,
         Err(_) => false,
     });
 
@@ -115,8 +107,21 @@ fn main() -> Result<(), &'static str> {
     }?;
 
     let lrtab: Box<dyn Table> = match ttype.as_str() {
-        "1" => Box::new(LR0Table::new(graph, &g)),
-        "2" => Box::new(SLR1Table::new(graph, &g)),
+        "1" => {
+            let mut graph = LR0Graph::new();
+            graph.construct(LR0Node::default(&g));
+            Box::new(LR0Table::new(graph, &g))
+        },
+        "2" => {
+            let mut graph = LR0Graph::new();
+            graph.construct(LR0Node::default(&g));
+            Box::new(SLR1Table::new(graph, &g))
+        },
+        "3" => {
+            let mut graph = LR1Graph::new();
+            graph.construct(LR1Node::default(&g));
+            Box::new(LR1Table::new(graph, &g))
+        },
         _ => unreachable!(),
     };
     println!("{}", lrtab);

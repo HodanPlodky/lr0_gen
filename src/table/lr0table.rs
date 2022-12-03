@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{grammar::{Grammar, Sym}, lr0graph::LR0Graph, lrtable::{Action, Table}};
+use crate::{grammar::{Grammar, Sym}, graph::{lrgraph::LR0Graph, rule::LRRule}, table::lrtable::{Action, Table}};
 
 #[derive(Debug)]
 pub(crate) struct LR0Table {
@@ -59,7 +59,7 @@ impl LR0Table {
     }
 }
 impl Table for LR0Table {
-    fn get_action(&self, state : usize, sym : Sym) -> Option<Action> {
+    fn get_action(&self, state : usize, _ : Sym) -> Option<Action> {
         let (_, a) = self.action.get(state).copied()?;
         Some(a)
     }

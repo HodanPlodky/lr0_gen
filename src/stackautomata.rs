@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use crate::{
-    grammar::{Grammar, Rule, Sym}, lr0table::LR0Table, lrtable::{Action, Table},
+    grammar::{Grammar, Rule, Sym}, table::lrtable::{Action, Table},
 };
 
 pub(crate) struct StackAutomata<'a> {
@@ -88,8 +88,6 @@ impl<'a> StackAutomata<'a> {
             }
             Action::Accept => {
                 let x = 0;
-                let rule = self.gramm.rules.get(x)?;
-                let c = self.compare_stack(rule)?;
                 self.result.push(x);
                 Some(Action::Accept)
             }

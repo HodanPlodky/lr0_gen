@@ -130,7 +130,9 @@ fn main() -> Result<(), &'static str> {
         "4" => {
             let mut graph = LALRGraph::new();
             graph.construct(LALRNode::default(&g));
-            Box::new(LR1Table::new(graph, &g))
+            let mut table = LR1Table::new(graph, &g);
+            table.name = "LALR1Table".to_string();
+            Box::new(table)
         }
         _ => unreachable!(),
     };

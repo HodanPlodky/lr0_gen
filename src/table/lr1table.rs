@@ -23,6 +23,8 @@ where
     gramm: &'a Grammar,
     phantom_n: PhantomData<&'a N>,
     phantom_t: PhantomData<&'a T>,
+
+    pub name : String,
 }
 
 impl<'a, N, T>Display for LR1Table<'a, N,T> 
@@ -31,7 +33,7 @@ where
     T: LRFollowGraph<'a, N>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "LR1Table")?;
+        writeln!(f, "{}", self.name)?;
         write!(f, "state\t|")?;
         for c in self.syms.iter().filter(|x| self.gramm.is_term(x)) {
             write!(f, "{}\t", c)?;
@@ -114,6 +116,7 @@ where
             gramm,
             phantom_n : PhantomData,
             phantom_t : PhantomData,
+            name : "LR1Table".to_string(),
         }
     }
 }

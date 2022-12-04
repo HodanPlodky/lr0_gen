@@ -5,7 +5,7 @@ use crate::{
     graph::lr0rule::LR0Rule,
 };
 
-use super::{lrnode::{LRNode, LRNodeStruct}, rule::LRRule};
+use super::{lrnode::LRNodeStruct, rule::LRRule};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct LR1Rule {

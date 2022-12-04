@@ -2,7 +2,11 @@ use std::{collections::HashMap, fmt::Display};
 
 use crate::{
     grammar::{Grammar, Sym},
-    graph::{lrgraph::LR0Graph, rule::LRRule, lrnode::LRNode},
+    graph::{
+        lrgraph::{LR0Graph, LRGraph},
+        lrnode::LRNode,
+        rule::LRRule,
+    },
     table::lrtable::{Action, Table},
 };
 
@@ -51,7 +55,7 @@ impl Display for SLR1Table<'_> {
     }
 }
 
-impl <'a> SLR1Table <'a> {
+impl<'a> SLR1Table<'a> {
     pub(crate) fn new(graph: LR0Graph, gramm: &'a Grammar) -> Self {
         let mut syms: Vec<char> = vec![];
         gramm
@@ -59,7 +63,7 @@ impl <'a> SLR1Table <'a> {
             .union(&gramm.non_terms)
             .for_each(|x| syms.push(*x));
         let action: Vec<(char, HashMap<Sym, Action>)> = graph
-            .nodes
+            .nodes()
             .iter()
             .map(|x| {
                 let mut res =
@@ -88,7 +92,7 @@ impl <'a> SLR1Table <'a> {
 
         Self {
             action,
-            goto: graph.edges,
+            goto: graph.edges().to_owned(),
             syms,
             gramm,
         }

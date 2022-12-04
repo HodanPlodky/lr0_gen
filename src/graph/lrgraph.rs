@@ -1,31 +1,87 @@
-use std::{collections::{HashMap, HashSet}, marker::PhantomData};
+use std::{
+    collections::{HashMap, HashSet},
+    marker::PhantomData,
+};
 
-use super::{lr0rule::LR0Rule, lr1graph::{LR1Rule, LR1Node}, lrnode::LRNode, rule::LRRule, lr0node::LR0Node};
+use super::{
+    lr0node::LR0Node,
+    lr0rule::LR0Rule,
+    lr1graph::{LR1Node, LR1Rule},
+    lrnode::LRNode,
+    rule::LRRule,
+};
 
-pub type LR0Graph<'a> = LRGraph<'a, LR0Node<'a>, LR0Rule>;
-pub type LR1Graph<'a> = LRGraph<'a, LR1Node<'a>, LR1Rule>;
-
-#[derive(Debug)]
-pub struct LRGraph<'a, T, R>
+pub trait LRGraph<'a, T, R>
 where
-    R: LRRule,
     T: LRNode<'a, R>,
+    R: LRRule,
 {
-    pub(crate) nodes: Vec<T>,
-    pub(crate) edges: Vec<HashMap<char, usize>>,
-    phantom : PhantomData<&'a R>,
+    // data
+    fn nodes(&self) -> &Vec<T>;
+    fn edges(&self) -> &Vec<HashMap<char, usize>>;
+    // behavior
+    fn new() -> Self;
+    fn exist(&self, node: &T) -> (bool, usize);
+    fn add_node(&mut self, node: T) -> usize;
+    fn construct(&mut self, start_node: T) {
+        self.add_node(start_node);
+    }
 }
 
-impl<'a, T, R> LRGraph<'a, T, R>
+pub trait LRFollowGraph<'a, T>: LRGraph<'a, T, LR1Rule>
+where
+    T: LRNode<'a, LR1Rule>,
+{
+}
+
+pub type LR0Graph<'a> = LRGraphStruct<'a, LR0Node<'a>, LR0Rule>;
+pub type LR1Graph<'a> = LRGraphStruct<'a, LR1Node<'a>, LR1Rule>;
+
+impl<'a> LRFollowGraph<'a, LR1Node<'a>> for LR1Graph<'a> {}
+
+#[derive(Debug)]
+pub struct LRGraphStruct<'a, T, R>
+where
+    R: LRRule,
+    T: LRNode<'a, R>,
+{
+    nodes: Vec<T>,
+    edges: Vec<HashMap<char, usize>>,
+    phantom: PhantomData<&'a R>,
+}
+
+impl<'a, T, R> LRGraphStruct<'a, T, R>
 where
     T: LRNode<'a, R>,
     R: LRRule,
 {
-    pub(crate) fn new() -> Self {
-        LRGraph {
+    pub fn insert_node(&mut self, index: usize, node : T) {
+        self.nodes[index] = node;
+    }
+
+    pub fn insert_edge(&mut self, index: usize, c : char, i : usize) {
+        self.edges[index].insert(c, i);
+    }
+
+    pub fn push_node(&mut self, node : T) {
+        self.nodes.push(node);
+    }
+
+    pub fn push_edge(&mut self, item : HashMap<char, usize>) {
+        self.edges.push(item);
+    } 
+}
+
+impl<'a, T, R> LRGraph<'a, T, R> for LRGraphStruct<'a, T, R>
+where
+    T: LRNode<'a, R>,
+    R: LRRule,
+{
+    fn new() -> Self {
+        Self {
             nodes: vec![],
             edges: vec![],
-            phantom : PhantomData,
+            phantom: PhantomData,
         }
     }
 
@@ -63,7 +119,11 @@ where
         index
     }
 
-    pub(crate) fn construct(&mut self, start_node: T) {
-        self.add_node(start_node);
+    fn nodes(&self) -> &Vec<T> {
+        &self.nodes
+    }
+
+    fn edges(&self) -> &Vec<HashMap<char, usize>> {
+        &self.edges
     }
 }

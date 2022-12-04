@@ -12,7 +12,7 @@ use std::{
 
 use crate::{
     grammar::Grammar,
-    graph::{lr0node::LR0Node, lrgraph::LR0Graph},
+    graph::{lr0node::LR0Node, lrgraph::{LR0Graph, LRGraph}, lalrgraph::LALRGraph, lalrnode::LALRNode},
     graph::{lr1graph::LR1Node, lrgraph::LR1Graph, lrnode::LRNode},
     stackautomata::StackAutomata,
     table::lr0table::LR0Table,
@@ -99,10 +99,10 @@ where
 fn main() -> Result<(), &'static str> {
     let g = load()?;
 
-    println!("1. LR0\n2. SLR(1)\n3. LR(1)");
+    println!("1. LR0\n2. SLR(1)\n3. LR(1)\n4. LALR(1)");
 
     let ttype = get_input(|x: &String| match x.parse::<i32>() {
-        Ok(x) => x == 1 || x == 2 || x == 3,
+        Ok(x) => x == 1 || x == 2 || x == 3 || x == 4,
         Err(_) => false,
     });
 
@@ -125,6 +125,11 @@ fn main() -> Result<(), &'static str> {
         "3" => {
             let mut graph = LR1Graph::new();
             graph.construct(LR1Node::default(&g));
+            Box::new(LR1Table::new(graph, &g))
+        }
+        "4" => {
+            let mut graph = LALRGraph::new();
+            graph.construct(LALRNode::default(&g));
             Box::new(LR1Table::new(graph, &g))
         }
         _ => unreachable!(),

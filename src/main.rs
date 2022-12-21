@@ -1,6 +1,6 @@
 mod grammar;
-mod stackautomata;
 mod graph;
+mod stackautomata;
 mod table;
 
 use std::{
@@ -11,8 +11,13 @@ use std::{
 };
 
 use crate::{
-    grammar::Grammar, graph::{lrgraph::LR1Graph, lr1graph::LR1Node}, graph::{lr0node::LR0Node, lrgraph::LR0Graph}, table::lr0table::LR0Table, table::{lrtable::Table, lr1table::LR1Table},
-    table::slr1table::SLR1Table, stackautomata::StackAutomata,
+    grammar::Grammar,
+    graph::{lr0node::LR0Node, lrgraph::{LR0Graph, LRGraph}, lalrgraph::LALRGraph, lalrnode::LALRNode},
+    graph::{lr1graph::LR1Node, lrgraph::LR1Graph, lrnode::LRNode},
+    stackautomata::StackAutomata,
+    table::lr0table::LR0Table,
+    table::slr1table::SLR1Table,
+    table::{lr1table::LR1Table, lrtable::Table},
 };
 
 fn load_lines(path: String) -> std::io::Result<Vec<String>> {
@@ -94,10 +99,10 @@ where
 fn main() -> Result<(), &'static str> {
     let g = load()?;
 
-    println!("1. LR0\n2. SLR(1)\n3. LR(1)");
+    println!("1. LR0\n2. SLR(1)\n3. LR(1)\n4. LALR(1)");
 
     let ttype = get_input(|x: &String| match x.parse::<i32>() {
-        Ok(x) => x == 1 || x == 2 || x == 3,
+        Ok(x) => x == 1 || x == 2 || x == 3 || x == 4,
         Err(_) => false,
     });
 
@@ -111,17 +116,24 @@ fn main() -> Result<(), &'static str> {
             let mut graph = LR0Graph::new();
             graph.construct(LR0Node::default(&g));
             Box::new(LR0Table::new(graph, &g))
-        },
+        }
         "2" => {
             let mut graph = LR0Graph::new();
             graph.construct(LR0Node::default(&g));
             Box::new(SLR1Table::new(graph, &g))
-        },
+        }
         "3" => {
             let mut graph = LR1Graph::new();
             graph.construct(LR1Node::default(&g));
             Box::new(LR1Table::new(graph, &g))
-        },
+        }
+        "4" => {
+            let mut graph = LALRGraph::new();
+            graph.construct(LALRNode::default(&g));
+            let mut table = LR1Table::new(graph, &g);
+            table.name = "LALR1Table".to_string();
+            Box::new(table)
+        }
         _ => unreachable!(),
     };
     println!("{}", lrtab);

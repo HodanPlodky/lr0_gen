@@ -1,21 +1,41 @@
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 
-use crate::{grammar::{Sym, Grammar}, graph::{lrgraph::LR1Graph, rule::LRRule}};
+use crate::{
+    grammar::{Grammar, Sym},
+    graph::{
+        lr1graph::LR1Rule,
+        lrgraph::LRFollowGraph,
+        lrnode::LRNode,
+        rule::LRRule,
+    },
+};
 
 use super::lrtable::{Action, Table};
 
-pub(crate) struct LR1Table<'a> {
+pub(crate) struct LR1Table<'a, N, T>
+where
+    N: LRNode<'a, LR1Rule>,
+    T: LRFollowGraph<'a, N>,
+{
     action: Vec<(char, HashMap<Sym, Action>)>,
     goto: Vec<HashMap<char, usize>>,
     syms: Vec<char>,
-    gramm : &'a Grammar,
+    gramm: &'a Grammar,
+    phantom_n: PhantomData<&'a N>,
+    phantom_t: PhantomData<&'a T>,
+
+    pub name : String,
 }
 
-impl Display for LR1Table<'_> {
+impl<'a, N, T>Display for LR1Table<'a, N,T> 
+where
+    N: LRNode<'a, LR1Rule>,
+    T: LRFollowGraph<'a, N>,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "LR1Table")?;
+        writeln!(f, "{}", self.name)?;
         write!(f, "state\t|")?;
-        for c in self.syms.iter().filter(|x| self.gramm.is_term(x)){
+        for c in self.syms.iter().filter(|x| self.gramm.is_term(x)) {
             write!(f, "{}\t", c)?;
         }
         write!(f, "{}\t|", Sym::Eps)?;
@@ -27,7 +47,7 @@ impl Display for LR1Table<'_> {
             let (c, _) = &self.action[i];
             write!(f, "{}{}\t|", c, i)?;
             let (_, a) = &self.action[i];
-            for c in self.syms.iter().filter(|x| self.gramm.is_term(x)){
+            for c in self.syms.iter().filter(|x| self.gramm.is_term(x)) {
                 match a.get(&Sym::Normal(*c)) {
                     Some(a) => write!(f, "{}\t", a),
                     None => write!(f, " \t"),
@@ -49,15 +69,19 @@ impl Display for LR1Table<'_> {
     }
 }
 
-impl <'a> LR1Table <'a> {
-    pub(crate) fn new(graph: LR1Graph, gramm: &'a Grammar) -> Self {
+impl<'a, N, T> LR1Table<'a, N, T>
+where
+    N: LRNode<'a, LR1Rule>,
+    T: LRFollowGraph<'a, N>,
+{
+    pub(crate) fn new(graph: T, gramm: &'a Grammar) -> Self {
         let mut syms: Vec<char> = vec![];
         gramm
             .terms
             .union(&gramm.non_terms)
             .for_each(|x| syms.push(*x));
         let action: Vec<(char, HashMap<Sym, Action>)> = graph
-            .nodes
+            .nodes()
             .iter()
             .map(|x| {
                 let mut res =
@@ -73,25 +97,35 @@ impl <'a> LR1Table <'a> {
                             res.insert(Sym::Normal(s), tmp);
                         }
                         None => {
-                            let tmp = res.get(&r.follow).unwrap().update(Action::Reduction(r.rule()));
+                            let tmp = res
+                                .get(&r.follow)
+                                .unwrap()
+                                .update(Action::Reduction(r.rule()));
                             res.insert(r.follow.clone(), tmp);
                         }
                     }
                 }
-                (x.from, res)
+                (x.from(), res)
             })
             .collect();
 
         Self {
             action,
-            goto: graph.edges,
+            goto: graph.edges().to_owned(),
             syms,
             gramm,
+            phantom_n : PhantomData,
+            phantom_t : PhantomData,
+            name : "LR1Table".to_string(),
         }
     }
 }
 
-impl Table for LR1Table<'_> {
+impl<'a, N, T>Table for LR1Table<'a, N, T> 
+where
+    N: LRNode<'a, LR1Rule>,
+    T: LRFollowGraph<'a, N>,
+{
     fn get_action(&self, state: usize, sym: Sym) -> Option<Action> {
         let (_, a) = self.action.get(state)?;
         a.get(&sym).copied()

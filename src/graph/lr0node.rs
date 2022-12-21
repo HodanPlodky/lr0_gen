@@ -1,14 +1,14 @@
 use crate::graph::lr0rule::LR0Rule;
 
-use super::lrnode::LRNode;
+use super::lrnode::LRNodeStruct;
 
-pub type LR0Node<'a> = LRNode<'a, LR0Rule>;
+pub type LR0Node<'a> = LRNodeStruct<'a, LR0Rule>;
 
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
 
-    use crate::grammar::Grammar;
+    use crate::{grammar::Grammar, graph::lrnode::LRNode};
 
     use super::*;
 
@@ -16,9 +16,9 @@ mod tests {
         let mut lr0node = LR0Node::new(HashSet::from_iter(rules.into_iter()), 'X', &gramm);
 
         lr0node.create_closure();
-        println!("{:?}", lr0node.closure);
+        println!("{:?}", lr0node.closure());
         for r in closure {
-            assert!(lr0node.closure.contains(&r));
+            assert!(lr0node.closure().contains(&r));
         }
     }
 

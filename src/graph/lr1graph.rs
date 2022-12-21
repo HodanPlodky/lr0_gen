@@ -5,11 +5,11 @@ use crate::{
     graph::lr0rule::LR0Rule,
 };
 
-use super::{lrnode::LRNode, rule::LRRule};
+use super::{lrnode::LRNodeStruct, rule::LRRule};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct LR1Rule {
-    lr0: LR0Rule,
+    pub lr0: LR0Rule,
     pub follow: Sym,
 }
 
@@ -86,4 +86,4 @@ impl LRRule for LR1Rule {
     }
 }
 
-pub type LR1Node<'a> = LRNode<'a, LR1Rule>;
+pub type LR1Node<'a> = LRNodeStruct<'a, LR1Rule>;

@@ -88,6 +88,8 @@ impl<'a> StackAutomata<'a> {
             }
             Action::Accept => {
                 let x = 0;
+                let rule = self.gramm.rules.get(x)?;
+                self.compare_stack(rule)?;
                 self.result.push(x);
                 Some(Action::Accept)
             }
